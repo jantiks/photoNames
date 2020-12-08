@@ -21,6 +21,10 @@ class ViewController: UICollectionViewController, UIImagePickerControllerDelegat
 
     @objc func addNewPerson() {
         let picker = UIImagePickerController()
+        if UIImagePickerController.isSourceTypeAvailable(.camera) {
+            picker.sourceType = .camera
+        }
+        
         picker.allowsEditing = true
         picker.delegate = self
         present(picker,animated: true)
@@ -29,19 +33,33 @@ class ViewController: UICollectionViewController, UIImagePickerControllerDelegat
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let person = people[indexPath.row]
         
-        let ac = UIAlertController(title: "Rename Person", message: nil, preferredStyle: .alert)
-        ac.addTextField()
-        
-        ac.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
-        
-        ac.addAction(UIAlertAction(title: "OK", style: .default){
-            [weak self, weak ac] _ in
-            guard let newName = ac?.textFields?[0].text else { return }
-            person.name = newName
-            
-            
+        let ac = UIAlertController(title: "Delete or Rename name?", message: nil, preferredStyle: .alert)
+        let delete = UIAlertAction(title: "Delete", style: .destructive) {
+            [weak self] _ in
+            self?.people.remove(at: indexPath.item)
             self?.collectionView.reloadData()
-        })
+        }
+        let rename = UIAlertAction(title: "Rename Person", style: .default) {
+            [weak self] _ in
+            
+            let newAc = UIAlertController(title: "Rename Person", message: nil, preferredStyle: .alert)
+            newAc.addTextField()
+            
+            newAc.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+            
+            newAc.addAction(UIAlertAction(title: "OK", style: .default){
+                [weak self, weak newAc] _ in
+                guard let newName = newAc?.textFields?[0].text else { return }
+                person.name = newName
+                
+                self?.collectionView.reloadData()
+            })
+            
+            self?.present(newAc,animated: true)
+        }
+        
+        ac.addAction(delete)
+        ac.addAction(rename)
         
         present(ac,animated: true)
     }
