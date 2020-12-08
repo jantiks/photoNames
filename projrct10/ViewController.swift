@@ -26,16 +26,46 @@ class ViewController: UICollectionViewController, UIImagePickerControllerDelegat
         present(picker,animated: true)
     }
     
+    override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        let person = people[indexPath.row]
+        
+        let ac = UIAlertController(title: "Rename Person", message: nil, preferredStyle: .alert)
+        ac.addTextField()
+        
+        ac.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+        
+        ac.addAction(UIAlertAction(title: "OK", style: .default){
+            [weak self, weak ac] _ in
+            guard let newName = ac?.textFields?[0].text else { return }
+            person.name = newName
+            
+            
+            self?.collectionView.reloadData()
+        })
+        
+        present(ac,animated: true)
+    }
+    
 
     override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         // #warning Incomplete implementation, return the number of items
-        return 10
+        return people.count
     }
 
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "Person", for: indexPath) as? PersonCell else { fatalError("Unable") }
     
+        let person = people[indexPath.item]
+        let path = getDocumetsDirectory().appendingPathComponent(person.image)
+        cell.name.text = person.name
+        cell.imageView.image = UIImage(contentsOfFile: path.path)
+        cell.imageView.layer.borderColor = UIColor(white: 0, alpha: 0.3).cgColor
+        cell.imageView.layer.borderWidth = 2
+        cell.imageView.layer.cornerRadius = 3
+        cell.layer.cornerRadius = 7
     
+        
+        
         return cell
     }
 
@@ -57,7 +87,7 @@ class ViewController: UICollectionViewController, UIImagePickerControllerDelegat
     }
     
     func getDocumetsDirectory() -> URL {
-        let paths = FileManager.default.urls(for: .userDirectory, in: .userDomainMask)
+        let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
         return paths[0]
     }
 }
