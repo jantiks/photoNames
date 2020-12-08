@@ -8,13 +8,21 @@
 
 import UIKit
 
-class ViewController: UICollectionViewController {
+class ViewController: UICollectionViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addNewPerson))
 
     }
 
+    @objc func addNewPerson() {
+        let picker = UIImagePickerController()
+        picker.allowsEditing = true
+        picker.delegate = self
+        present(picker,animated: true)
+    }
     
 
     override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
@@ -29,5 +37,21 @@ class ViewController: UICollectionViewController {
         return cell
     }
 
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        guard let image = info[.editedImage] as? UIImage else { return }
+        
+        let imageName = UUID().uuidString
+        let imagePath = getDocumetsDirectory().appendingPathComponent(imageName)
+        
+        if let jpegImage = image.jpegData(compressionQuality: 0.8) {
+            try? jpegImage.write(to: imagePath)
+        }
+        
+        dismiss(animated: true)
+    }
     
+    func getDocumetsDirectory() -> URL {
+        let paths = FileManager.default.urls(for: .userDirectory, in: .userDomainMask)
+        return paths[0]
+    }
 }
